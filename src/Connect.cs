@@ -52,6 +52,8 @@ namespace CodeAtlas
 
 		private CommandObj[] m_commandList, m_socketCommandList;
 		private SocketThread m_socket;
+		private object		 m_toolBarObj;
+		private CommandBarControl m_menuBarObj;
 
 		/// <summary>实现外接程序对象的构造函数。请将您的初始化代码置于此方法内。</summary>
 		public Connect()
@@ -95,8 +97,15 @@ namespace CodeAtlas
 				Microsoft.VisualStudio.CommandBars.CommandBar menuBarCommandBar = ((Microsoft.VisualStudio.CommandBars.CommandBars)m_applicationObject.CommandBars)["MenuBar"];
 
 				//在 MenuBar 命令栏上查找“工具”命令栏:
-				CommandBarControl toolsControl = menuBarCommandBar.Controls[toolsMenuName];
-				CommandBarPopup toolsPopup = (CommandBarPopup)toolsControl;
+// 				CommandBarControl toolsControl = menuBarCommandBar.Controls[toolsMenuName];
+// 				CommandBarPopup toolsPopup = (CommandBarPopup)toolsControl;
+
+				m_menuBarObj = menuBarCommandBar.Controls.Add(MsoControlType.msoControlPopup, Type.Missing, Type.Missing, Type.Missing, true);
+				m_menuBarObj.Caption = "Code Atlas";
+				CommandBarPopup toolsPopup = (CommandBarPopup)m_menuBarObj;
+
+				// 增加工具栏
+				//m_toolBarObj = m_applicationObject.Commands.AddCommandBar("Code Atlas Tools", vsCommandBarType.vsCommandBarTypeToolbar);
 
 				//如果希望添加多个由您的外接程序处理的命令，可以重复此 try/catch 块，
 				//  只需确保更新 QueryStatus/Exec 方法，使其包含新的命令名。
@@ -120,16 +129,13 @@ namespace CodeAtlas
                         if ((cmd != null) && (toolsPopup != null))
 						{
 							cmd.AddControl(toolsPopup.CommandBar, ithCmd + 1);
+							//cmd.AddControl(m_toolBarObj, ithCmd + 1);
 							m_commandList[ithCmd].command = cmd;
 							string key = m_commandList[ithCmd].key;
-// 							if (key != null && key.Length > 0)
-// 							{
-// 								string shortcut = m_commandList[ithCmd].key;
-// 								object[] shortCutObj = new object[] { shortcut };
-// 								Type type = cmd.Bindings.GetType();
-// 								System.Object[] objs = new System.Object[] { shortcut };
-// 								cmd.Bindings = objs; //"Global::f2";// shortcut;// new string[] { shortcut };
-// 							}
+							if (key != null && key.Length > 0)
+							{
+								cmd.Bindings = key;
+							}
                         }
                     }
 				}
@@ -159,13 +165,26 @@ namespace CodeAtlas
 			{
 				m_socket.release();
 				m_socket = null;
-				
+
+				if (m_toolBarObj != null)
+				{
+					m_applicationObject.Commands.RemoveCommandBar(m_toolBarObj);
+					m_toolBarObj = null;
+				}
+
+				if (m_menuBarObj != null)
+				{
+					m_menuBarObj.Delete();
+					m_menuBarObj = null;
+				}
+
 				int nCommand = m_commandList.Length;
 				for (int ithCmd = 0; ithCmd < nCommand; ++ithCmd)
 				{
 					CommandObj cmdObj = m_commandList[ithCmd];
 					if (cmdObj.command != null)
 					{
+						m_commandList[ithCmd].command.Bindings = "";
 						m_commandList[ithCmd].command.Delete();
 						m_commandList[ithCmd].command = null;
 					}
@@ -263,7 +282,7 @@ namespace CodeAtlas
 			string addInPath = m_addInInstance.SatelliteDllPath;
 			int lastIdx = addInPath.LastIndexOf("\\");
 			string fullFolder = addInPath.Substring(0, lastIdx);
-
+			
 			string curDir = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
 			curDir = System.Environment.CurrentDirectory;
 			curDir = System.IO.Directory.GetCurrentDirectory();
@@ -428,17 +447,17 @@ namespace CodeAtlas
 				new CommandObj("StartAtlas", "Start Atlas", onStartAtlas),
 				//new CommandObj("OpenDatabase", "Open Database", onOpenDatabase),
 				new CommandObj("AnalyzeDatabase", "Analyze Database", onAnalyzeDatabase),
-				new CommandObj("ShowInAtlas", "Show In Atlas", onShowInAtlas, "Text Editor::alt+f"),
-				new CommandObj("FindCallers", "Find Callers", onFindCallers, "Text Editor::alt+c"),
-				new CommandObj("FindCallees", "Find Callees", onFindCallees, "Text Editor::alt+v"),
-				new CommandObj("FindMembers", "Find Members", onFindMembers, "Text Editor::alt+m"),
-				new CommandObj("FindBases", "Find Bases", onFindBases, "Text Editor::alt+b"),
-				new CommandObj("FindUses", "Find Uses", onFindUses, "Text Editor::alt+u"),
-				new CommandObj("GoToRight", "Go To Right", onGoToRight, "Text Editor::alt+right"),
-				new CommandObj("GoToLeft", "Go To Left", onGoToLeft, "Text Editor::alt+left"),
-				new CommandObj("GoToUp", "Go To Up", onGoToUp, "Text Editor::alt+up"),
-				new CommandObj("GoToDown", "Go To Down", onGoToDown, "Text Editor::alt+down"),
-				new CommandObj("DeleteSelectedItems", "Delete Selected Items", onDeleteSelectedItems, "Text Editor::alt+delete"),
+				new CommandObj("ShowInAtlas", "Show In Atlas", onShowInAtlas, "文本编辑器::shift+alt+g"),
+				new CommandObj("FindCallers", "Find Callers", onFindCallers, "文本编辑器::shift+alt+c"),
+				new CommandObj("FindCallees", "Find Callees", onFindCallees, "文本编辑器::shift+alt+v"),
+				new CommandObj("FindMembers", "Find Members", onFindMembers, "文本编辑器::shift+alt+m"),
+				new CommandObj("FindBases", "Find Bases", onFindBases, "文本编辑器::shift+alt+b"),
+				new CommandObj("FindUses", "Find Uses", onFindUses, "文本编辑器::shift+alt+u"),
+				new CommandObj("GoToRight", "Go To Right", onGoToRight, "文本编辑器::shift+alt+d"),
+				new CommandObj("GoToLeft", "Go To Left", onGoToLeft, "文本编辑器::shift+alt+a"),
+				new CommandObj("GoToUp", "Go To Up", onGoToUp, "文本编辑器::shift+alt+w"),
+				new CommandObj("GoToDown", "Go To Down", onGoToDown, "文本编辑器::shift+alt+s"),
+				new CommandObj("DeleteSelectedItems", "Delete Selected Items", onDeleteSelectedItems, "文本编辑器::shift+alt+del"),
 				new CommandObj("DeleteOldestItems", "Delete Oldest Items", onDeleteOldestItems),
 
 			};
