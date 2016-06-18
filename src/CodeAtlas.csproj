@@ -117,32 +117,21 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\..\..\Users\me\Documents\Visual Studio 2012\Addins\CodeAtlas - For Testing.AddIn">
-      <Link>CodeAtlas - For Testing.AddIn</Link>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="..\..\..\..\Users\me\Documents\Visual Studio 2012\Addins\CodeAtlas.AddIn">
-      <Link>CodeAtlas.AddIn</Link>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="CodeAtlasBackup.AddIn">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\Users\me\Documents\Visual Studio 2012\Addins\codeView.bat">
-      <Link>codeView.bat</Link>
-    </None>
+    <Content Include="CodeAtlas.AddIn" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="codeView.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy "..\CodeAtlas.dll" "I:\Users\me\Documents\Visual Studio 2012\Addins"
+copy "..\..\CodeAtlas.addin" "I:\Users\me\Documents\Visual Studio 2012\Addins"
+copy "..\..\CodeView.bat" "I:\Users\me\Documents\Visual Studio 2012\Addins"</PostBuildEvent>
   </PropertyGroup>
   <ProjectExtensions />
   <Target Name="AfterBuild">

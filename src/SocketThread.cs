@@ -17,7 +17,6 @@ namespace CodeAtlas
         private int m_port = 0, m_remotePort = 0;
         private Socket m_socket = null;
         private Thread m_socketThread = null;
-        private DataContractJsonSerializer m_jsonDecoder;
 		private SocketCallback m_socketCallback;
 
         public SocketThread(string ipAddress, int port, string remoteAddress, int remotePort, SocketCallback callback = null)

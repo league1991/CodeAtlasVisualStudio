@@ -68,8 +68,7 @@ namespace CodeAtlas
 		public void OnConnection(object application, ext_ConnectMode connectMode, object addInInst, ref Array custom)
 		{
 			m_applicationObject = (DTE2)application;
-			m_addInInstance = (AddIn)addInInst;
-            			
+			m_addInInstance = (AddIn)addInInst;            			
 
             if ((connectMode == ext_ConnectMode.ext_cm_Startup || connectMode == ext_ConnectMode.ext_cm_AfterStartup) && m_socket == null)
 			{
@@ -79,26 +78,13 @@ namespace CodeAtlas
 				Commands2 commands = (Commands2)m_applicationObject.Commands;
 				string toolsMenuName = "Tools";
 
-// 				Properties props = m_applicationObject.get_Properties("Environment", "Keyboard");
-// 				try
-// 				{
-// 					foreach (Property prop in props)
-// 					{
-// 						string pn = prop.Name;
-// 					}
-// 					Property scheme = props.Item("SchemeName");
-// 				}
-// 				catch (System.Exception ex)
-// 				{
-// 					
-// 				}
 				//将此命令置于“工具”菜单上。
 				//查找 MenuBar 命令栏，该命令栏是容纳所有主菜单项的顶级命令栏:
 				Microsoft.VisualStudio.CommandBars.CommandBar menuBarCommandBar = ((Microsoft.VisualStudio.CommandBars.CommandBars)m_applicationObject.CommandBars)["MenuBar"];
 
 				//在 MenuBar 命令栏上查找“工具”命令栏:
-// 				CommandBarControl toolsControl = menuBarCommandBar.Controls[toolsMenuName];
-// 				CommandBarPopup toolsPopup = (CommandBarPopup)toolsControl;
+//  				CommandBarControl toolsControl = menuBarCommandBar.Controls[toolsMenuName];
+//  				CommandBarPopup toolsPopup = (CommandBarPopup)toolsControl;
 
 				m_menuBarObj = menuBarCommandBar.Controls.Add(MsoControlType.msoControlPopup, Type.Missing, Type.Missing, Type.Missing, true);
 				m_menuBarObj.Caption = "Code Atlas";
@@ -111,32 +97,42 @@ namespace CodeAtlas
 				//  只需确保更新 QueryStatus/Exec 方法，使其包含新的命令名。
 				try
 				{
-					//int nCommand = m_commandNames.Length;
+					foreach (Command cmd in commands)
+					{
+						foreach (CommandObj cmdObj in m_commandList)
+						{
+							if (cmd.Name == "CodeAtlas.Connect."+cmdObj.name)
+							{
+								cmdObj.command = cmd;
+							}
+						}
+					}
+
 					int nCommand = m_commandList.Length;
                     for (int ithCmd = 0; ithCmd < nCommand; ++ithCmd)
                     {
-                        Command cmd = commands.AddNamedCommand2(
-                            m_addInInstance,
-                            m_commandList[ithCmd].name,
-                            m_commandList[ithCmd].displayName,
-                            "Executes the command for CodeAtlas",
-                            true, 59, ref contextGUIDS,
-                            (int)vsCommandStatus.vsCommandStatusSupported + (int)vsCommandStatus.vsCommandStatusEnabled,
-                            (int)vsCommandStyle.vsCommandStylePictAndText,
-                            vsCommandControlType.vsCommandControlTypeButton);
+						if (m_commandList[ithCmd].command == null)
+						{
+							m_commandList[ithCmd].command = commands.AddNamedCommand2(
+								m_addInInstance,
+								m_commandList[ithCmd].name,
+								m_commandList[ithCmd].displayName,
+								"Executes the command for CodeAtlas",
+								false, Type.Missing, ref contextGUIDS,
+								(int)vsCommandStatus.vsCommandStatusSupported + (int)vsCommandStatus.vsCommandStatusEnabled,
+								(int)vsCommandStyle.vsCommandStyleText,
+								vsCommandControlType.vsCommandControlTypeButton);
+						}
+						Command cmd = m_commandList[ithCmd].command;
 
                         //将对应于该命令的控件添加到“工具”菜单:
-                        if ((cmd != null) && (toolsPopup != null))
+						cmd.AddControl(toolsPopup.CommandBar, ithCmd + 1);
+						//cmd.AddControl(m_toolBarObj, ithCmd + 1);
+						string key = m_commandList[ithCmd].key;
+						if (key != null && key.Length > 0)
 						{
-							cmd.AddControl(toolsPopup.CommandBar, ithCmd + 1);
-							//cmd.AddControl(m_toolBarObj, ithCmd + 1);
-							m_commandList[ithCmd].command = cmd;
-							string key = m_commandList[ithCmd].key;
-							if (key != null && key.Length > 0)
-							{
-								cmd.Bindings = key;
-							}
-                        }
+							cmd.Bindings = key;
+						}
                     }
 				}
 				catch(System.ArgumentException exception)
@@ -165,30 +161,31 @@ namespace CodeAtlas
 			{
 				m_socket.release();
 				m_socket = null;
+			}
+			
+			if (m_toolBarObj != null)
+			{
+				m_applicationObject.Commands.RemoveCommandBar(m_toolBarObj);
+				m_toolBarObj = null;
+			}
 
-				if (m_toolBarObj != null)
-				{
-					m_applicationObject.Commands.RemoveCommandBar(m_toolBarObj);
-					m_toolBarObj = null;
-				}
 
-				if (m_menuBarObj != null)
+			int nCommand = m_commandList.Length;
+			for (int ithCmd = 0; ithCmd < nCommand; ++ithCmd)
+			{
+				CommandObj cmdObj = m_commandList[ithCmd];
+				if (cmdObj.command != null)
 				{
-					m_menuBarObj.Delete();
-					m_menuBarObj = null;
+					//m_commandList[ithCmd].command.Bindings = "";
+					m_commandList[ithCmd].command.Delete();
+					m_commandList[ithCmd].command = null;
 				}
+			}
 
-				int nCommand = m_commandList.Length;
-				for (int ithCmd = 0; ithCmd < nCommand; ++ithCmd)
-				{
-					CommandObj cmdObj = m_commandList[ithCmd];
-					if (cmdObj.command != null)
-					{
-						m_commandList[ithCmd].command.Bindings = "";
-						m_commandList[ithCmd].command.Delete();
-						m_commandList[ithCmd].command = null;
-					}
-				}
+			if (m_menuBarObj != null)
+			{
+				m_menuBarObj.Delete();
+				m_menuBarObj = null;
 			}
 		}
 
@@ -282,6 +279,12 @@ namespace CodeAtlas
 			string addInPath = m_addInInstance.SatelliteDllPath;
 			int lastIdx = addInPath.LastIndexOf("\\");
 			string fullFolder = addInPath.Substring(0, lastIdx);
+						
+// 			string solutionFolder = m_applicationObject.Solution.FullName;
+// 			lastIdx = solutionFolder.LastIndexOf("\\");
+// 			if (lastIdx >= 0)
+// 				solutionFolder = solutionFolder.Substring(0, lastIdx);
+// 			solutionFolder = solutionFolder.Replace("\\","/");
 			
 			string curDir = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
 			curDir = System.Environment.CurrentDirectory;
@@ -294,7 +297,7 @@ namespace CodeAtlas
 			//p.StartInfo.RedirectStandardOutput = true;
 			//p.StartInfo.RedirectStandardError = true;
 			p.StartInfo.CreateNoWindow= false;
-			p.StartInfo.WorkingDirectory = fullFolder;// "C:\\Users\\me\\AppData\\Roaming\\Sublime Text 3\\Packages\\CodeAtlas";
+			p.StartInfo.WorkingDirectory = fullFolder;
 			p.Start();
 			p.StandardInput.WriteLine("codeView.bat");
 			p.StandardInput.Flush();
@@ -323,6 +326,7 @@ namespace CodeAtlas
 			
 			ts.SelectLine();
 			string lineText = ts.Text;
+			ts.MoveToLineAndOffset(lineNum, lineOffset);
 
 			Regex rx = new Regex(@"\b(?<word>\w+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 			MatchCollection matches = rx.Matches(lineText);
@@ -344,7 +348,6 @@ namespace CodeAtlas
 
 			if (token != null)
 			{
-				ts.MoveToLineAndOffset(lineNum, lineOffset);
 				string docPath = doc.FullName;
 				m_socket.remoteCall("showInAtlas", new object[]{token, "*", docPath, lineNum});
 			}
@@ -422,7 +425,7 @@ namespace CodeAtlas
 			m_socket.remoteCall("onClearOldestItem");
 		}
 
-		public void onTest2(object[] param)
+		void onTest2(object[] param)
 		{
 		}
 
