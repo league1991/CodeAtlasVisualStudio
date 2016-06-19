@@ -4,4 +4,3 @@ I:\Programs\vsAddin\CodeAtlas\src\bin\Debug\CodeAtlas.xml
 I:\Programs\vsAddin\CodeAtlas\src\obj\Debug\CodeAtlas.csproj.ResolveComReference.cache
 I:\Programs\vsAddin\CodeAtlas\src\obj\Debug\CodeAtlas.dll
 I:\Programs\vsAddin\CodeAtlas\src\obj\Debug\CodeAtlas.pdb
-I:\Programs\vsAddin\CodeAtlas\src\obj\Debug\CodeAtlas.csprojResolveAssemblyReference.cache

@@ -67,7 +67,7 @@ namespace CodeAtlas
 		/// <seealso class='IDTExtensibility2' />
 		public void OnConnection(object application, ext_ConnectMode connectMode, object addInInst, ref Array custom)
 		{
-			m_applicationObject = (DTE2)application;
+			 m_applicationObject = (DTE2)application;
 			m_addInInstance = (AddIn)addInInst;            			
 
             if ((connectMode == ext_ConnectMode.ext_cm_Startup || connectMode == ext_ConnectMode.ext_cm_AfterStartup) && m_socket == null)
@@ -132,6 +132,7 @@ namespace CodeAtlas
 						if (key != null && key.Length > 0)
 						{
 							cmd.Bindings = key;
+							//cmd.Bindings = "文本编辑器::alt+LEFT";
 						}
                     }
 				}
@@ -450,17 +451,17 @@ namespace CodeAtlas
 				new CommandObj("StartAtlas", "Start Atlas", onStartAtlas),
 				//new CommandObj("OpenDatabase", "Open Database", onOpenDatabase),
 				new CommandObj("AnalyzeDatabase", "Analyze Database", onAnalyzeDatabase),
-				new CommandObj("ShowInAtlas", "Show In Atlas", onShowInAtlas, "文本编辑器::shift+alt+g"),
-				new CommandObj("FindCallers", "Find Callers", onFindCallers, "文本编辑器::shift+alt+c"),
-				new CommandObj("FindCallees", "Find Callees", onFindCallees, "文本编辑器::shift+alt+v"),
-				new CommandObj("FindMembers", "Find Members", onFindMembers, "文本编辑器::shift+alt+m"),
-				new CommandObj("FindBases", "Find Bases", onFindBases, "文本编辑器::shift+alt+b"),
-				new CommandObj("FindUses", "Find Uses", onFindUses, "文本编辑器::shift+alt+u"),
-				new CommandObj("GoToRight", "Go To Right", onGoToRight, "文本编辑器::shift+alt+d"),
-				new CommandObj("GoToLeft", "Go To Left", onGoToLeft, "文本编辑器::shift+alt+a"),
-				new CommandObj("GoToUp", "Go To Up", onGoToUp, "文本编辑器::shift+alt+w"),
-				new CommandObj("GoToDown", "Go To Down", onGoToDown, "文本编辑器::shift+alt+s"),
-				new CommandObj("DeleteSelectedItems", "Delete Selected Items", onDeleteSelectedItems, "文本编辑器::shift+alt+del"),
+				new CommandObj("ShowInAtlas", "Show In Atlas", onShowInAtlas, "文本编辑器::alt+f"),
+				new CommandObj("FindCallers", "Find Callers", onFindCallers, "文本编辑器::alt+c"),
+				new CommandObj("FindCallees", "Find Callees", onFindCallees, "文本编辑器::alt+v"),
+				new CommandObj("FindMembers", "Find Members", onFindMembers, "文本编辑器::alt+m"),
+				new CommandObj("FindBases", "Find Bases", onFindBases, "文本编辑器::alt+b"),
+				new CommandObj("FindUses", "Find Uses", onFindUses, "文本编辑器::alt+u"),
+				new CommandObj("GoToLeft", "Go To Left", onGoToLeft, "文本编辑器::alt+j"),
+				new CommandObj("GoToRight", "Go To Right", onGoToRight, "文本编辑器::alt+l"),
+				new CommandObj("GoToUp", "Go To Up", onGoToUp, "文本编辑器::alt+i"),
+				new CommandObj("GoToDown", "Go To Down", onGoToDown, "文本编辑器::alt+k"),
+				new CommandObj("DeleteSelectedItems", "Delete Selected Items", onDeleteSelectedItems, "文本编辑器::alt+del"),
 				new CommandObj("DeleteOldestItems", "Delete Oldest Items", onDeleteOldestItems),
 
 			};
